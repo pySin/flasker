@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block content %}
+    <!-- Get a flash message -->
+    {% for message in get_flashed_messages() %}
+    {{ message }}
+    {% endfor %}
+
+    <h1>Hello world</h1>
+    <p>This is a normal tag.</p>
+    <p>My name is {{ first_name }}</p>
+    <p>HTML used: {{ stuff|safe }}</p>
+    <p>Tags stripped: {{ stuff|striptags }}</p>
+    <p>Title: {{ stuff_2|title }}</p>
+
+    <h3>Favorite pizza</h3>
+    {% for pizza in favorite_pizza %}
+        {% if pizza == 41%}
+            <h3>IF statement use: {{ pizza + 100}}</h3>
+        {% else %}
+            <h4>Else statement: {{ pizza }}</h4>
+        {% endif %}
+    {% endfor %}
+
+    <!--List of Jinja2 builtin filters: https://jinja.palletsprojects.com/en/3.0.x/templates/#builtin-filters-->
+
+        </br></br>
+    <p>Show zero item in a list:</p>
+    <!-- We can do math in jinja -->
+    {{ favorite_pizza.3 + 20}}
+
+{% endblock %}
