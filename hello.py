@@ -56,17 +56,17 @@ app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
 class UserForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
-    favorite_color = StringField("Favorite color", )
+    favorite_color = StringField("Favorite color")
     submit = SubmitField("Submit")
 
 
-# Create a form class / CSRF tokens prevents hackers.
+# Create a form class.
 class NamerForm(FlaskForm):
     name = StringField("What's your name?", validators=[DataRequired()])
     submit = SubmitField("Submit")
 
 
-# Update Database Record
+# Update Database Record.
 @app.route('/update/<int:id>', methods=['GET', 'POST'])
 def update(id):
     form = UserForm()
@@ -105,6 +105,7 @@ def add_user():
         form.favorite_color.data = ''
         flash('User added successfully!')
     our_users = Users.query.order_by(Users.date_added)
+    print(our_users)
     return render_template('add_user.html', form=form, name=name, our_users=our_users)
 
 # Jinja tags to consider: safe, capitalize, lower, upper, title, trim, striptags
@@ -153,5 +154,5 @@ def name():
                                             # gets re-rendered on SUBMIT.
 
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# if __name__ == '__main__':
+#     app.run(debug=True)
