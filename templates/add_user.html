@@ -19,6 +19,8 @@
         <tr><td>
             {{ our_user.id }} - <a href="{{ url_for('update', id=our_user.id) }}">{{ our_user.name }}</a> -
             {{ our_user.email }} - {{ our_user.favorite_color}}
+            - <a href="{{ url_for('delete', id=our_user.id) }}">Delete</a>
+
         </td></tr>
         </br>
         {% endfor %}
@@ -51,12 +53,12 @@
     <tr><td>
         {{ our_user.id }} -
         <a href="{{ url_for('update', id=our_user.id) }}">{{ our_user.name }}</a> - {{ our_user.email }}
-        {{ our_user.favorite_color }}
+        {{ our_user.favorite_color }} - 
+        <a href="{{ url_for('delete', id=our_user.id) }}">Delete</a>
     </td></tr>
     </br>
 {% endfor %}
 </table>
-<p>Check</p>
 
 {% endif %}
 
