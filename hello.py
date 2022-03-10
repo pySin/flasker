@@ -1,7 +1,7 @@
 from flask import Flask, render_template, flash, request
 from flask_wtf import FlaskForm
-from wtforms import StringField, SubmitField
-from wtforms.validators import DataRequired
+from wtforms import StringField, SubmitField, PasswordField, BooleanField, ValidationError
+from wtforms.validators import DataRequired, EqualTo, Length
 from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -52,7 +52,7 @@ class Users(db.Model):
 
     @password.setter
     def password(self, password):
-        self.passowrd_hash = generate_password_hash(password)
+        self.password_hash = generate_password_hash(password)
     
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
@@ -71,6 +71,8 @@ class UserForm(FlaskForm):
     name = StringField("Name", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
     favorite_color = StringField("Favorite color")
+    password_hash = PasswordField('Password', validators=[DataRequired(), EqualTo('password_hash2', message='Passwords Must Match')])
+    password_hash2 = PasswordField('Confirm Password', validators=[DataRequired()])
     submit = SubmitField("Submit")
 
 
@@ -129,14 +131,18 @@ def add_user():
     if form.validate_on_submit():
         user = Users.query.filter_by(email=form.email.data).first()
         if user is None:
+            # Hash the password!!!
+            hashed_pw = generate_password_hash(form.password_hash.data, "sha256")
             user = Users(name=form.name.data, email=form.email.data,
-                         favorite_color=form.favorite_color.data)
+                         favorite_color=form.favorite_color.data,
+                         password_hash=hashed_pw)
             db.session.add(user)
             db.session.commit()
         name = form.name.data
         form.name.data = ''
         form.email.data = ''
         form.favorite_color.data = ''
+        form.password_hash.data = ''
         flash('User added successfully!')
     our_users = Users.query.order_by(Users.date_added)
     print(our_users)
