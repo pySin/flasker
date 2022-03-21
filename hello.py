@@ -6,7 +6,8 @@ from datetime import datetime
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
-
+from datetime import date
+from wtforms.widgets import TextArea
 
 # # Types of forms elements
 # BooleanField, DateField, DateTimeField, DecimalField, FileField, HiddenField, MultipleField
@@ -34,6 +35,68 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:dance@localhost/ou
 # MySQL with simple row uncommenting.
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+
+# Create Blog Post Model
+class Posts(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(255))
+    content = db.Column(db.Text)
+    author = db.Column(db.String(255))
+    date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+    slug = db.Column(db.String(255)) # Extension of the web address
+
+# Create a Posts Form
+class PostForm(FlaskForm):
+    title = StringField("Title", validators=[DataRequired()])
+    content = StringField("Content", validators=[DataRequired()], widget=TextArea())
+    author = StringField("Author", validators=[DataRequired()])
+    slug = StringField("Slug", validators=[DataRequired()])
+    submit = SubmitField("Submit")
+
+# All Posts Page
+@app.route('/posts')
+def posts():
+    # Grab all the posts from the database.
+    posts = Posts.query.order_by(Posts.date_posted)
+    return render_template("posts.html", posts=posts) 
+
+# Add post page.
+@app.route('/add_post', methods=['GET', 'POST'])
+def add_post():
+    form = PostForm()
+
+    if form.validate_on_submit():
+        post = Posts(title=form.title.data,
+            content=form.content.data,
+            author=form.author.data,
+            slug=form.slug.data)
+        # Clear the form
+        form.title.data = ''
+        form.content.data = ''
+        form.author.data = ''
+        form.slug.data = ''
+
+        # Add post form data to the database
+        db.session.add(post)
+        db.session.commit()
+
+        # Return a message
+        flash("Blog post submitted successfuly!")
+
+    our_posts = Posts.query.order_by(Posts.author)
+    # Redirect to the webpage
+    return render_template("add_post.html", form=form)
+
+# JSON thing.
+@app.route('/date')
+def get_current_date():
+    favorite_pizza = {
+    "Mary": "Peperoni",
+    "Tom": "Cheese",
+    "Sinan": "Chicken Corn"
+    }
+    return {"Date": date.today()}
+
 
 # Create a table model.
 class Users(db.Model):
