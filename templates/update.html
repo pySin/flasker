@@ -8,29 +8,23 @@
     {{ message }}
     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-
 {% endfor %}
 
-{% if name %}
-    <h1>Update User</h1>
-        </br></br></br>
-        <table class="table table-hover table-bordered table-striped">
-        {% for our_user in our_users %}
-        <tr><td>
-        {{ our_user.id }} -{{ our_user.name }} - {{ our_user.email }} - {{ our_user.favorite_color }}
-        </td></tr>
-        </br>
-        {% endfor %}
-        </table>
+{% if id == current_user.id %}
 
-{% else %}
     <h1>Update User</h1>
-
+    </br>
+    ID to update: {{ id }}</br>
+    Current ID: {{ current_user.id }}
+    </br>
     <div class="shadow p-3 mb-5 bg-body rounded">
     <form action="/update/{{ name_to_update.id }}" method="POST">
         {{ form.hidden_tag()}} <!-- 'form' is the WTForms object and it has attributes -->
         {{ form.name.label(class="form-label") }}
         {{ form.name(class="form-control", value=name_to_update.name) }}
+
+        {{ form.username.label(class="form-label") }}
+        {{ form.username(class="form-control", value=name_to_update.username) }}
 
         {{ form.email.label(class="form-label") }}
         {{ form.email(class="form-control", value=name_to_update.email) }}
@@ -46,6 +40,19 @@
     </form>
     </div>
 
+{% else %}
+
+
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    Sorry, you can't edit this user...
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+
+    <h2>Access denied</h2>
+    <p> You can not access this user profile!</p>
+
+
 {% endif %}
+
 
 {% endblock %}

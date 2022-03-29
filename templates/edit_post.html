@@ -11,11 +11,10 @@
 
 {% endfor %}
 
-{% if current_user.is_authenticated %}
+<h2>Blog Posts...</h2>
+<br/>
 
-    <h1>Add Blog Post</h1>
-
-    <div class="shadow p-3 mb-5 bg-body rounded">
+<div class="shadow p-3 mb-5 bg-body rounded">
     <form method="POST">
         {{ form.hidden_tag()}} <!-- 'form' is the WTForms object and it has attributes -->
         {{ form.title.label(class="form-label") }}
@@ -30,13 +29,9 @@
         </br>
         {{ form.submit(class="btn btn-secondary")}}
     </form>
-    </div>
-{% else %}
-<h2>Must be looged in...</h2>
-<p>You must be logged in to access this page!</p>
+</div>
 
-<a href="{{ url_for('login') }}">Login Here</a>
-
-{% endif %}
+<a href="{{ url_for('posts') }}"
+class="btn btn-outline-secondary btn-sm">Back To Blog</a>
 
 {% endblock %}
