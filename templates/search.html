@@ -2,20 +2,14 @@
 
 {% block content %}
 
-{% for message in get_flashed_messages() %}
+</br>
+<h2> You searched for: <em>{{ searched }}</em></h2>
 
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-    {{ message }}
-    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
+</br>
 
-{% endfor %}
-
-<h2>Blog Posts...</h2>
-<br/>
-
-{% for post in posts %}
-<div class="shadow p-3 mb-5 bg-body rounded">
+{% if posts %}
+	{% for post in posts %}
+	<div class="shadow p-3 mb-5 bg-body rounded">
     <h3>
     <a href="{{ url_for('post', id=post.id) }}">
     {{ post.title }}
@@ -34,8 +28,10 @@
     <a href="{{ url_for('delete_post', id=post.id) }}"
     class="btn btn-outline-danger btn-sm">Delete Post</a>
     {% endif %}
-</div>
-{% endfor %}
+	</div>
+	{% endfor %}
+{% endif %}
 
+<h4>No results for: {{ searched }}</h4>
 
 {% endblock %}

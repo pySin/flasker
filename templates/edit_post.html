@@ -13,6 +13,7 @@
 
 <h2>Blog Posts...</h2>
 <br/>
+<h3>Edit Post</h3>
 
 <div class="shadow p-3 mb-5 bg-body rounded">
     <form method="POST">
@@ -29,6 +30,9 @@
         </br>
         {{ form.submit(class="btn btn-secondary")}}
     </form>
+    {{ ckeditor.load() }}
+    {{ ckeditor.config(name='Content') }}
+
 </div>
 
 <a href="{{ url_for('posts') }}"

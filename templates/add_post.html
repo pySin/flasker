@@ -30,6 +30,8 @@
         </br>
         {{ form.submit(class="btn btn-secondary")}}
     </form>
+    {{ ckeditor.load() }}
+    {{ ckeditor.config(name='Content') }}
     </div>
 {% else %}
 <h2>Must be looged in...</h2>

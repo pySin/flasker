@@ -9,7 +9,8 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import date
 # from wtforms.widgets import TextArea
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
-from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm
+from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm
+from flask_ckeditor import CKEditor
 
 
 # # Types of forms elements
@@ -26,7 +27,8 @@ from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm
 
 #  Create a Flask instance.
 app = Flask(__name__)
-
+# Add CKEditor
+ckeditor = CKEditor(app)
 # Add Database.
 # Old SQLite Database.
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
@@ -39,7 +41,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:dance@localhost/ou
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-
 # Flask_Login stuff. Needed to use "@login_required"
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -48,6 +49,39 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     return Users.query.get(int(user_id))
+
+# Pass staff to navbar.
+@app.context_processor
+def base():
+    form = SearchForm()
+    return dict(form=form)
+
+# Create Search function
+@app.route('/search', methods=["POST"])
+def search():
+    form = SearchForm()
+    posts = Posts.query
+    if form.validate_on_submit():
+        # Get data from submitted form
+        post.searched = form.searched.data
+        # Query the database.
+        posts = posts.filter(Posts.content.like(
+            '%' + post.searched + '%'))
+        posts = posts.order_by(Posts.title).all() # Order posts!
+        return render_template("search.html", form=form,
+            searched=post.searched, posts=posts)
+
+# Create admin page.
+@app.route('/admin')
+@login_required
+def admin():
+    id = current_user.id
+    if id == 19:
+        return render_template('admin.html')
+    else:
+        flash("Sorry! You must be the addmin to access this page!")
+        return redirect(url_for('dashboard'))
+
 
 # Create Login Page
 @app.route('/login', methods=['GET', 'POST'])
@@ -106,22 +140,30 @@ def dashboard():
 
 # Delete Blog Posts
 @app.route('/posts/delete/<int:id>')
+@login_required
 def delete_post(id):
     post_to_delete = Posts.query.get_or_404(id)
+    id = current_user.id
+    if id == post_to_delete.poster.id:
 
-    try:
-        db.session.delete(post_to_delete)
-        db.session.commit()
-        flash("Blog post deleted.")
-        posts = Posts.query.order_by(Posts.date_posted)
-        return render_template("posts.html", posts=posts)
+        try:
+            db.session.delete(post_to_delete)
+            db.session.commit()
+            flash("Blog post deleted.")
+            posts = Posts.query.order_by(Posts.date_posted)
+            return render_template("posts.html", posts=posts)
 
-    except:
+        except:
+            # Return error message.
+            flash("There was a problem deleting the post...")
+            posts = Posts.query.order_by(Posts.date_posted)
+            return render_template("posts.html", posts=posts) 
+
+    else:
         # Return error message.
-        flash("There was a problem deleting the post...")
+        flash("You are not authorized to delete this post")
         posts = Posts.query.order_by(Posts.date_posted)
         return render_template("posts.html", posts=posts) 
-
 
 # All Posts Page
 @app.route('/posts')
@@ -154,17 +196,23 @@ def edit_post(id):
         flash("Post has been updated!")
         return redirect(url_for('post', id=post.id))
 
-    form.title.data = post.title
-    form.slug.data = post.slug
-    form.content.data = post.content
-    return render_template('edit_post.html', form=form)
+    if current_user.id == post.poster_id:
+        form.title.data = post.title
+        form.slug.data = post.slug
+        form.content.data = post.content
+        return render_template('edit_post.html', form=form)
+
+    else:
+        flash("You can't edit this post!")
+        post = Posts.query.get_or_404(id)
+        return render_template('post.html', post=post)        
+
 
 # Add post page.
 @app.route('/add_post', methods=['GET', 'POST'])
 # @login_required
 def add_post():
     form = PostForm()
-
     if form.validate_on_submit():
         poster = current_user.id
         post = Posts(title=form.title.data,
@@ -348,6 +396,7 @@ def name():
                                             # gets re-rendered on SUBMIT.
 
 
+
 # Create Blog Post Model
 class Posts(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -359,6 +408,8 @@ class Posts(db.Model):
     # Foreign Key To link Users(refer to primary key of the user)
     poster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
+
+# The posts form place change to be defined in the last function
 # Create a table model.
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
@@ -385,7 +436,6 @@ class Users(db.Model, UserMixin):
     
     def verify_password(self, password):
         return check_password_hash(self.password_hash, password)
-
 
 # if __name__ == '__main__':
 #     app.run(debug=True)
