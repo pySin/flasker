@@ -11,7 +11,9 @@ from datetime import date
 from flask_login import UserMixin, login_user, LoginManager, login_required, logout_user, current_user
 from webforms import LoginForm, PostForm, UserForm, PasswordForm, NamerForm, SearchForm
 from flask_ckeditor import CKEditor
-
+from werkzeug.utils import secure_filename
+import uuid as uuid
+import os
 
 # # Types of forms elements
 # BooleanField, DateField, DateTimeField, DecimalField, FileField, HiddenField, MultipleField
@@ -35,6 +37,9 @@ ckeditor = CKEditor(app)
 # New MySQL DB.
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://username:password@host(localhost)/db_name'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:dance@localhost/our_users'
+
+UPLOAD_FOLDER = 'static/images'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # Initialize the database. SQLAlchemy can easily work with most Databases. We can change SQLite with
 # MySQL with simple row uncommenting.
@@ -123,8 +128,22 @@ def dashboard():
         name_to_update.email = request.form['email']
         name_to_update.favorite_color = request.form['favorite_color']
         name_to_update.username = request.form['username']
+        name_to_update.about_author = request.form['about_author']
+        name_to_update.profile_pic = request.files['profile_pic']
+        
+        # Grab image name.
+        pic_filename = secure_filename(name_to_update.profile_pic.filename)
+        # Set UUID
+        pic_name = str(uuid.uuid1()) + "_" + pic_filename
+        # Save That Image
+        saver = request.files['profile_pic']
+        # Change it to string to add to the database.
+        name_to_update.profile_pic = pic_name
+
         try:
             db.session.commit()
+            saver.save(os.path.join(app.config['UPLOAD_FOLDER']), pic_name)
+        
             flash('User updated successfully')
             return render_template('dashboard.html', form=form, name_to_update=name_to_update)
         except:
@@ -417,7 +436,9 @@ class Users(db.Model, UserMixin):
     name = db.Column(db.String(200), nullable=False)
     email = db.Column(db.String(120), nullable=False, unique=True)
     favorite_color = db.Column(db.String(120))
+    about_author = db.Column(db.Text(500), nullable=True)
     date_added = db.Column(db.DateTime, default=datetime.utcnow)
+    profile_pic = db.Column(db.String(200), nullable=True)
 
     # Do some password stuff
     password_hash = db.Column(db.String(128))
