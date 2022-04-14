@@ -271,23 +271,29 @@ app.config['SECRET_KEY'] = "my super secret key that no one is supposed to know"
 
 # Delete Database Record
 @app.route('/delete/<int:id>')
+@login_required
 def delete(id):
-    user_to_delete = Users.query.get_or_404(id)
-    name = None
-    form = UserForm()
+    if id == current_user.id:
 
-    try:
-        db.session.delete(user_to_delete)
-        db.session.commit()
-        flash("User deleted successfully")
+        user_to_delete = Users.query.get_or_404(id)
+        name = None
+        form = UserForm()
 
-        our_users = Users.query.order_by(Users.date_added)
-        return render_template('add_user.html',
-        form=form, name=name, our_users=our_users)
-    except:
-        flash("There was a problem deleting the user!")
-        return render_template('add_user.html',
-        form=form, name=name, our_users=our_users)
+        try:
+            db.session.delete(user_to_delete)
+            db.session.commit()
+            flash("User deleted successfully")
+
+            our_users = Users.query.order_by(Users.date_added)
+            return render_template('add_user.html',
+            form=form, name=name, our_users=our_users)
+        except:
+            flash("There was a problem deleting the user!")
+            return render_template('add_user.html',
+            form=form, name=name, our_users=our_users)
+    else:
+        flash("Sorry you can not delete that user!")
+        return redirect(url_for('dashboard'))
 
 # Update Database Record.
 @app.route('/update/<int:id>', methods=['GET', 'POST'])
