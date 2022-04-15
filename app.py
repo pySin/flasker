@@ -37,7 +37,7 @@ ckeditor = CKEditor(app)
 # New MySQL DB.
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql://username:password@host(localhost)/db_name'
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:dance@localhost/our_users'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://rgloirzutgfjjo:ca4ce4d4b9c735b430873f5ef4c0b3a9275272611a330588bd2fccaec94fa363@ec2-52-73-155-171.compute-1.amazonaws.com:5432/dens344n88h62n'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://ibvzlswsxrnriz:c39c0d6d730d8d2174a378e998c5509c994dc9a6208d4bbd6aa41c4e14e89b4e@ec2-3-218-171-44.compute-1.amazonaws.com:5432/dda4hlbh0nk1mq'
 
 UPLOAD_FOLDER = 'static/images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
